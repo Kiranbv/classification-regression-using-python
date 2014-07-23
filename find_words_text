@@ -1,0 +1,106 @@
+""" Features
+
+The objective of this task is to explore the corpus, given in the text file. 
+
+The file contains a set of deal descriptions. 
+
+1. What is the most popular term across all the deals?
+2. What is the least popular term across all the deals?
+3. How many types of guitars are mentioned across all the deals?
+
+"""
+
+# Assignnment numbers 1 and 2
+
+import os
+import re
+
+
+
+# changing working directory to my choice. 
+os.getcwd()
+os.chdir('C:\\Users\\byadarkv\\Desktop\\myfolder')
+
+
+
+# Reading the deals.txt file. set_words is a dictionary variable in the form of
+# index value pairs. 
+File_object_0 = open('ml\\data\\deals.txt','r')
+set_words ={}
+
+
+
+# reading all the lines of the deals.txt file.
+lines_file = File_object_0.readlines()
+
+
+
+# finding words in the text and counting number of each words in the text file. 
+for line in lines_file:
+    words_line = line.split()
+    for word in words_line:
+        if word in set_words:
+            set_words[word] +=1
+        else:
+            set_words[word] = 1
+
+
+
+"""
+number of appearence of each word in the text file and index of maximum and
+minimum values. Also get all the keys. 
+"""
+values_words = list(set_words.values())
+keys_words = list(set_words.keys())
+index_max = values_words.index(max(values_words))
+index_min = values_words.index(min(values_words))
+
+
+
+# The most and least popular terms
+term_most_popular = keys_words[index_max]
+term_least_popular = keys_words[index_min]
+print("The most popular term is",term_most_popular)
+print("The least popular term is",term_least_popular)
+
+
+
+
+# This section is to find the types of guitars mentioned. Assignment number 3
+"""
+compiling regular expression to ind all groups of words containing the word guitar
+Here we get all instances of (word) guitar.
+"""
+count =0
+guitar_types_raw = []
+expr_find_guitar = re.compile("(\w+\s[g|G]uita[r|rs])")
+for line in lines_file:
+    search_obj = expr_find_guitar.search(line)
+    if(search_obj):
+        count = count+1
+        guitar_types_raw.append(search_obj.group(0))
+
+
+
+
+
+# Here i filter the list out to find the type of guitars
+# Standard guitar types
+common_guitar_types = ["Electric Guitar","Jazz Guitar","Acoustic Guitar",\
+                       "Twelve-String Guitar","Archtop Guitar"\
+                       "Steel Guitar","Resonator Guitar","Classical Guitar",\
+                       "Bass Guitar","Semi-Acoustic Guitar","Flamenco Guitar"]
+
+guitar_types_raw = list(set(guitar_types_raw))
+number_types = 0
+i = 1
+j = 1
+for i in range(len(guitar_types_raw)):
+    for j in range(len(common_guitar_types)):
+        if(guitar_types_raw[i] == common_guitar_types[j]):
+            number_types = number_types+1
+print("The number of guitar types is",number_types)
+            
+        
+    
+
