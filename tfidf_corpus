@@ -1,0 +1,52 @@
+""" Groups and Topics
+
+The objective of this task is to explore the structure of the a given txt file. 
+Perform tf-idf on the data.
+
+"""
+
+
+import os
+import re
+
+
+
+# changing working directory to my choice. 
+os.getcwd()
+os.chdir('C:\\Users\\byadarkv\\Desktop\\myfolder')
+
+
+
+# Reading the deals.txt file.
+File_object_0 = open('ml\\data\\deals.txt','r')
+
+
+
+# tf-idf on deals.txt file
+
+# reading all the lines of the deals.txt file.
+lines_file = File_object_0.readlines()
+
+# Vectorizing the document which performs the tokenizing and occurence counting
+# with respect to each deal. The rows are the deals and the columns words.
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfTransformer
+
+corpus_1 = []
+for line in lines_file:
+    corpus_1.append(line)
+
+
+    
+
+vectorizer = CountVectorizer(min_df=1,stop_words='english')
+data_vector = vectorizer.fit_transform(corpus_1)
+
+
+
+
+# data_vector.toarray()
+transform1 = TfidfTransformer()
+tfidf_data = transform1.fit_transform(data_vector)
+
+
