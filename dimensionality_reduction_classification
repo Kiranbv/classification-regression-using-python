@@ -1,0 +1,154 @@
+"""
+This program takes in a labeled data from a excel file.
+This dataset contains 50 observations and one target variable. The target variable
+has two values 0 and 1
+What we are trying to predict here is that given these 50 metrics
+how likely is a user to have a target value of 1.  
+
+The following tasks are performed
+Perform exploratory analysis on the dataset to answer following questions:
+
+1. Are there any redundant metrics in the 50 variables we have collected?
+2. Are there any correlated metrics?
+3. Will dimensionality reduction need to be applied?
+
+Once you know what you are looking at perform the following tasks:
+
+1. Find the optimal number of features that maximize the accuracy of predicting 'coupon_click'
+
+
+Use optimal features you found above with different classifiers and evaulate your classifiers as to how general they are with relevant metrics.
+
+"""
+
+
+import os
+import re
+import pandas as pd
+import numpy
+
+# changing working directory to my choice. 
+os.getcwd()
+os.chdir('C:\\Users\\byadarkv\\Desktop\\myfolder')
+
+
+
+# Reading the coupon click data stream
+click_datastream = pd.read_csv("ml\\data\\data_given.csv")
+data_matrix = pd.DataFrame.as_matrix(click_datastream)
+# Finding redundant metrics
+
+# first get a row of the dataset. This contains all the metrics and use it to
+# check for redundacy 
+
+row1 = click_datastream.iloc[0]
+row1_unique = row1.unique()
+if(len(row1_unique)<len(row1)):
+    print("There are reundant mentrics present in the data")
+# To answer question 1. There are redundant metrics in the data set.
+
+
+
+# Finding Corealted metrics. Use the row from above
+features_inp = data_matrix[:,0:50]
+corr_matrix = numpy.corrcoef(features_inp.T)
+i = 0
+j = 0
+count = 0
+# If two columns have high correlation with each other(higher value of correlation coefficient,
+# they are identified. 
+
+for i in range(len(corr_matrix)-1):
+    for j in range(len(corr_matrix)-1):
+        if(corr_matrix[i,j] > 0.9):
+            count = count +1
+if(count>len(corr_matrix)):
+    print("There are coorealted metrics present in the data")
+
+
+# To answer question 2. There are correlated metrics in the data set.
+
+
+# Question 3: Yes dimensionality reduction needs to be performed on that data
+# set. We can use Principal Component Analysis.
+
+
+# Identifying optimal number of features
+eigenvalues,eigenvectors = numpy.linalg.eig(corr_matrix)
+max_value = numpy.amax(eigenvalues)
+optimal_number = 0
+i = 0
+# removing the features with the smallest eigen values we get optimal features
+for i in range(len(eigenvalues)):
+    if(eigenvalues[i]>=0.05*max_value):
+        optimal_number = optimal_number+1
+print("The optimal number of features are",optimal_number)
+
+
+# Dimensionality reduction using PCA. Method 1
+from sklearn.decomposition import PCA
+inp_features_1 = features_inp.T
+pca_model1 = PCA(n_components=optimal_number)
+inp_features_red = pca_model1.fit_transform(features_inp)
+
+training_data = inp_features_red[0:800,:]
+testing_data = inp_features_red[801:1000,:]
+training_targets = data_matrix[0:800,50]
+testing_targets = data_matrix[801:1000,50]
+
+# Different classifiers
+# Support vector classifier
+# Training
+from sklearn.svm import SVC
+click_training = SVC()
+click_training.fit(training_data,training_targets)
+
+# testing Support vector classifier
+test_outputs = click_training.predict(testing_data)            
+i = 0
+comparison = 0
+for i in range(len(testing_targets)):
+    if(test_outputs[i] == testing_targets[i]):
+        comparison = comparison + 1
+print("The percentage of data correctly classified \
+for support vector classifier is",(comparison/len(testing_targets)) *100)
+
+
+# Decision Trees
+# training
+from sklearn import tree
+click_tree = tree.DecisionTreeClassifier()
+click_tree.fit(training_data,training_targets)
+
+# testing
+
+test_outputs = click_tree.predict(testing_data)            
+i = 0
+comparison = 0
+for i in range(len(testing_targets)):
+    if(test_outputs[i] == testing_targets[i]):
+        comparison = comparison + 1
+print("The percentage of data correctly classified \
+for decision tree classifier is",(comparison/len(testing_targets)) *100)
+
+
+
+# Stochastic gradient descent
+# training
+from sklearn.linear_model import SGDClassifier
+click_stochgrad = SGDClassifier(loss="hinge", penalty="l2")
+click_stochgrad.fit(training_data,training_targets)
+
+# testing
+
+test_outputs = click_stochgrad.predict(testing_data)            
+i = 0
+comparison = 0
+for i in range(len(testing_targets)):
+    if(test_outputs[i] == testing_targets[i]):
+        comparison = comparison + 1
+print("The percentage of data correctly classified \
+for stochastic gradient descent calssifier is",(comparison/len(testing_targets)) *100)
+
+
+
