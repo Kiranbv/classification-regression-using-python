@@ -1,0 +1,121 @@
+""" Classification
+
+The objective of this task is to build a classifier to classify given data
+in text files. The important features of the data need to be recognized
+and applied to the classifier. The data is made up of deals and we should build
+a classifier to check if a deal needs a coupon or not. 
+
+"""
+
+
+
+import os
+import numpy as np
+import re
+
+
+
+# changing working directory to my choice. 
+os.getcwd()
+os.chdir('C:\\Users\\byadarkv\\Desktop\\my folder')
+
+"""
+  Reading the three files good_deals.txt, bad_deals.txt and test_deals.txt
+  one by one.
+"""
+File_object_good = open('ml\\data\\good_deals.txt','r')
+lines_file_good = File_object_good.readlines()
+
+File_object_bad = open('ml\\data\\bad_deals.txt','r')
+lines_file_bad = File_object_bad.readlines()
+
+File_object_test = open('ml\\data\\test_deals.txt','r')
+lines_file_test = File_object_test.readlines()
+
+
+
+"""
+In this section i am trying to write a pre processor which takes in the text
+files containing good, bad and test deals and replaces the coupon code by
+a string such that those deals with a coupon code have that string and
+those without coupon code dont. This helps the classifier identify deals
+with coupon code.
+
+
+"""
+
+
+
+string_match = re.compile(('[[c|C]ode*|[C|c]oupon|Use]'))
+lines_file_good_new =[]
+lines_file_bad_new =[]
+lines_file_test_new =[]
+for line in lines_file_good:
+    lines_file_good_new.append(string_match.sub('code neuralnetwork',line))
+for line in lines_file_bad:
+    lines_file_bad_new.append(string_match.sub('code neuralnetwork',line))   
+for line in lines_file_test:
+    lines_file_test_new.append(string_match.sub('code neuralnetwork',line))
+
+
+
+
+                           
+# getting all the words in the two input text files
+words_global =[]
+for line in lines_file_good:
+    words_temp = line.split()
+    for word in words_temp:
+        words_global.append(word)   
+
+for line in lines_file_bad:
+    words_temp = line.split()
+    for word in words_temp:
+        words_global.append(word)
+words_global = list(set(words_global))
+
+# combined corpus of the training files
+training_set = lines_file_good_new + lines_file_bad_new
+
+
+
+# Vectorizing the training set and getting the input features
+from sklearn.feature_extraction.text import CountVectorizer
+vectorizer = CountVectorizer(min_df=1,stop_words='english')
+good_deals_vector = vectorizer.fit_transform(training_set)
+input_features = good_deals_vector.toarray()
+features_training_set = vectorizer.get_feature_names()
+number_features = len(features_training_set)
+
+
+# getting targets. The deals with coupon codes have a target of 1 and those
+# without coupon codes have a target value of -1
+targets = np.ones(len(training_set))*-1
+count = 0
+
+string_match_1 = re.compile("neuralnetwork")
+for line in training_set:
+    search_obj = string_match_1.search(line)
+    count = count + 1
+    if(search_obj):
+        targets[count] = 1
+        
+# Training a support vector classifier
+from sklearn.svm import SVC
+coupon_training = SVC()
+coupon_training.fit(input_features,targets)
+
+
+# Getting the test features
+
+vectorizer_test = CountVectorizer(min_df=1,stop_words='english',vocabulary=features_training_set)
+testing_set = vectorizer_test.fit_transform(lines_file_test_new)
+testing_features = testing_set.toarray()
+
+
+test_outputs = coupon_training.predict(testing_features)
+
+
+
+                        
+                         
